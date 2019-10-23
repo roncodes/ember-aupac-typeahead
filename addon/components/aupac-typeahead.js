@@ -1,11 +1,15 @@
-import Ember from 'ember';
+import Component from '@ember/component';
+import EmberObject, { observer, get } from '@ember/object';
+import { isNone } from '@ember/utils';
+import { run } from '@ember/runloop';
+import { debug } from '@ember/debug';
+import { getOwner } from '@ember/application';
 import footerTemplate from '../templates/components/aupac-typeahead/footer';
 import headerTemplate from '../templates/components/aupac-typeahead/header';
 import notFoundTemplate from '../templates/components/aupac-typeahead/not-found';
 import pendingTemplate from '../templates/components/aupac-typeahead/pending';
 import suggestionTemplate from '../templates/components/aupac-typeahead/suggestion';
-
-const {observer, isNone, run, debug, getOwner, Component} = Ember;
+import $ from 'jquery';
 
 const Key = {
   BACKSPACE : 8,
@@ -81,12 +85,12 @@ export default Component.extend({
    * @param selection the item selected by the user
    */
   setValue : function(selection) {
-    if (this.get('_typeahead')) { // Was failing in tests with this probably due to a stray observer
-      selection = this.get('transformSelection')(selection);
+    if (get(this, '_typeahead')) { // Was failing in tests with this probably due to a stray observer
+      selection = get(this, 'transformSelection')(selection);
       if(selection) {
-        this.get('_typeahead').typeahead('val', selection);
+        get(this, '_typeahead').typeahead('val', selection);
       } else {
-        this.get('_typeahead').typeahead('val', '');
+        get(this, '_typeahead').typeahead('val', '');
       }
     }
   },
@@ -94,37 +98,37 @@ export default Component.extend({
   didInsertElement: function () {
     this._super(...arguments);
     this.initializeTypeahead();
-    if (this.get('autoFocus') === true) {
-      this.get('_typeahead').focus();
+    if (get(this, 'autoFocus') === true) {
+      get(this, '_typeahead').focus();
     }
     this.addObserver('disabled', this.disabledStateChanged);
   },
 
   disabledStateChanged() {
     // Toggling the disabled attribute on the controller does not update the hint, need to do this manually.
-    this.$().parent().find('input.tt-hint').prop('disabled', this.get('disabled'));
+    $(this.element).parent().find('input.tt-hint').prop('disabled', get(this, 'disabled'));
   },
 
   initializeTypeahead: function() {
     const self = this;
     //Setup the typeahead
-    const t = this.$().typeahead({
-      highlight: this.get('highlight'),
-      hint: this.get('hint'),
-      minLength: this.get('minLength'),
-      classNames: this.get('typeaheadClassNames')
+    const t = $(this.element).typeahead({
+      highlight: get(this, 'highlight'),
+      hint: get(this, 'hint'),
+      minLength: get(this, 'minLength'),
+      classNames: get(this, 'typeaheadClassNames')
       }, {
         component : this,
-        name: this.get('datasetName') || 'default',
-        display: this.get('display'),
-        async: this.get('async'),
-        limit: this.get('limit'),
-        source: this.get('source'),
+        name: get(this, 'datasetName') || 'default',
+        display: get(this, 'display'),
+        async: get(this, 'async'),
+        limit: get(this, 'limit'),
+        source: get(this, 'source'),
         templates: {
           suggestion: function (model) {
             const el = document.createElement('div');
             if (typeof model !== 'object') {
-              model = Ember.Object.create({
+              model = EmberObject.create({
                 displayName: model
               });
             }
@@ -138,7 +142,7 @@ export default Component.extend({
           },
           notFound: function (query) {
             const el = document.createElement('div');
-            const model = Ember.Object.create({
+            const model = EmberObject.create({
               query
             });
             let owner = getOwner(self);
@@ -151,7 +155,7 @@ export default Component.extend({
           },
           pending: function (query) {
             const el = document.createElement('div');
-            const model = Ember.Object.create({
+            const model = EmberObject.create({
               query
             });
             let owner = getOwner(self);
@@ -164,7 +168,7 @@ export default Component.extend({
           },
           header: function (query, suggestions) {
             const el = document.createElement('div');
-            const model = Ember.Object.create({
+            const model = EmberObject.create({
               query,
               suggestions
             });
@@ -178,7 +182,7 @@ export default Component.extend({
           },
           footer: function (query, suggestions) {
             const el = document.createElement('div');
-            const model = Ember.Object.create({
+            const model = EmberObject.create({
               query,
               suggestions
             });
@@ -207,9 +211,9 @@ export default Component.extend({
       //Handle the case whereby the user presses the delete or backspace key, in either case
       //the selection is no longer valid.
       if (jqEvent.which === Key.BACKSPACE || jqEvent.which === Key.DELETE) {
-        if (!this.get('allowFreeInput')) {
+        if (!get(this, 'allowFreeInput')) {
           debug("Removing model");
-          const value = this.get('_typeahead').typeahead('val'); //cache value
+          const value = get(this, '_typeahead').typeahead('val'); //cache value
           this.updateSelectionWhenChanged(null, 'keyup');
           this.setValue(value); // restore the text, thus allowing the user to make corrections
         }
@@ -230,9 +234,9 @@ export default Component.extend({
   },
 
   _commitSelection: function(evt_name) {
-    const model = this.get('selection');
-    if (this.get('allowFreeInput')) {
-      const value = this.get('_typeahead').typeahead('val');
+    const model = get(this, 'selection');
+    if (get(this, 'allowFreeInput')) {
+      const value = get(this, '_typeahead').typeahead('val');
       this.updateSelectionWhenChanged(value, evt_name);
     } else if (model) {
       this.setValue(model);
@@ -242,7 +246,7 @@ export default Component.extend({
   },
 
   selectionUpdated: observer('selection', '_typeahead',function() {
-    const selection = this.get('selection');
+    const selection = get(this, 'selection');
     if(isNone(selection)) {
       this.setValue(null);
     } else {
@@ -251,7 +255,7 @@ export default Component.extend({
   }),
 
   updateSelectionWhenChanged: function(value, evt_name){
-    const oldValue = this.get('oldValue');
+    const oldValue = get(this, 'oldValue');
     if (oldValue !== value) {
       this.set('oldValue', value);
       this.set('selection', value);
@@ -261,7 +265,7 @@ export default Component.extend({
 
   willDestroyElement : function() {
     this._super(...arguments);
-    let t = this.get('_typeahead');
+    let t = get(this, '_typeahead');
 
     //Remove custom event handlers before destroying
     t.off('typeahead:autocompleted');
