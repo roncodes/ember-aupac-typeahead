@@ -9,7 +9,7 @@ import headerTemplate from '../templates/components/aupac-typeahead/header';
 import notFoundTemplate from '../templates/components/aupac-typeahead/not-found';
 import pendingTemplate from '../templates/components/aupac-typeahead/pending';
 import suggestionTemplate from '../templates/components/aupac-typeahead/suggestion';
-import $ from 'jquery';
+import jQuery from 'jquery';
 
 const Key = {
   BACKSPACE : 8,
@@ -106,13 +106,13 @@ export default Component.extend({
 
   disabledStateChanged() {
     // Toggling the disabled attribute on the controller does not update the hint, need to do this manually.
-    $(this.element).parent().find('input.tt-hint').prop('disabled', get(this, 'disabled'));
+    jQuery(this.element).parent().find('input.tt-hint').prop('disabled', get(this, 'disabled'));
   },
 
   initializeTypeahead: function() {
     const self = this;
     //Setup the typeahead
-    const t = $(this.element).typeahead({
+    const t = jQuery(this.element).typeahead({
       highlight: get(this, 'highlight'),
       hint: get(this, 'hint'),
       minLength: get(this, 'minLength'),

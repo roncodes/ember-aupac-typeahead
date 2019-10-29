@@ -2,7 +2,7 @@ import AupacTypeahead from './aupac-typeahead';
 import { inject as service } from '@ember/service';
 import { observer, computed } from '@ember/object';
 import { typeOf, isNone } from '@ember/utils';
-import $ from 'jquery';
+import jQuery from 'jquery';
 
 export default AupacTypeahead.extend({
 
@@ -91,7 +91,7 @@ export default AupacTypeahead.extend({
     return function (query, syncResults, asyncResults) {
       const q = {};
       q[_get(this, 'queryKey')] = query;
-      const queryObj = $.extend(true, {}, q , _get(this, 'params'));
+      const queryObj = jQuery.extend(true, {}, q , _get(this, 'params'));
 
       _get(this, 'store').query(_get(this, 'modelClass'), queryObj).then(function(models) {
         let emberDataModels = [];
